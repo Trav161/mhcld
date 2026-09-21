@@ -18,24 +18,37 @@ Extract the project folder to your computer.
 
 ---
 
-
 ## 2. Install Required Software
 
 Install:
-- Visual Studio Code
-- DuckDB support for VS Code
+
+* Visual Studio Code
+* DuckDB support for VS Code
 
 Open Visual Studio Code after installation.
 
-## 3. Unzip CSV
+---
 
-The project folder includes the 2024 SAMHSA MH-CLD CSV archive in:
+## 3. Download the Source Data
 
-data/raw/MH-CLD-2024-DS0001-bndl-data-csv_v1
+This project does not include the raw MH-CLD ZIP file.
 
-Extract the zip file inside the same folder.
+Download the data directly from SAMHSA:
 
-The extracted CSV may remain inside its generated subfolder. The Bronze script searches for CSV files within data/raw/.
+1. Visit the official [SAMHSA MH-CLD Data Files page](https://www.samhsa.gov/data/data-we-collect/mh-cld-mental-health-client-level-data/datafiles).
+
+2. Download the **Mental Health Client-Level Data (MH-CLD)** delimited or CSV public-use file.
+
+   Direct download: [MH-CLD-2024-DS0001-bndl-data-csv_v1.zip](https://www.samhsa.gov/data/system/files/media-puf-file/MH-CLD-2024-DS0001-bndl-data-csv_v1.zip)
+
+3. Extract the ZIP file into:
+
+```text
+data/raw/
+```
+
+The Bronze script is designed to search recursively inside `data/raw/`, so the extracted folder structure can remain as downloaded.
+
 ---
 
 ## 4. Open the Project
@@ -48,9 +61,11 @@ Select the extracted MH-CLD project folder.
 
 The project should resemble:
 
+```text
 mhcld/
 ├── data/
-│   └── raw/MH-CLD-2024-DS0001-bndl-data-csv_v1\mhcld_puf_2024.csv
+│   └── raw/
+│       └── extracted MH-CLD CSV files
 ├── docs/
 ├── sql/
 │   ├── bronze/
@@ -61,10 +76,32 @@ mhcld/
 ├── warehouse/
 ├── getting_started.md
 └── README.md
+```
 
-## 5. Get DuckDB environment ready
+---
 
-## 6. Start building the [bronze layer](sql/bronze/00_build_bronze.sql)
+## 5. Get the DuckDB Environment Ready
 
+Open the Bronze script in VS Code:
 
+```text
+sql/bronze/00_build_bronze.sql
+```
 
+Run the script to create or open the local DuckDB warehouse and load the raw MH-CLD CSV data into the Bronze layer.
+
+---
+
+## 6. Build the Warehouse Layers
+
+Run the SQL scripts in order:
+
+```text
+1. sql/bronze/00_build_bronze.sql
+2. sql/silver/00_build_silver.sql
+3. sql/silver/quality_checks_silver.sql
+4. sql/gold/00_build_gold.sql
+5. sql/gold/quality_checks_gold.sql
+```
+
+The warehouse is designed so additional analytical questions can be added without modifying the raw source layer.
