@@ -1,0 +1,22 @@
+# Project Plan
+
+## Objective
+Build a SQL data warehouse using SAMHSA MH-CLD data and a medallion architecture.
+
+## Source
+SAMHSA MH-CLD annual CSV dataset.
+
+## Architecture
+Source → Bronze → Silver → Gold → Analysis
+
+## Bronze
+Ingest raw data while preserving source structure.
+
+## Silver
+Clean and standardize the source data.
+
+## Gold
+Create dimensional tables and analytical fact tables.
+
+## Validation
+Verify row counts, uniqueness, and table relationships.
