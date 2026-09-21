@@ -14,7 +14,7 @@ Develop a SQL focused data warehouse using SAMHSA MH-CLD data.The medallion arch
 
 ---
 
-### Analytics & Reporting [Data Analysis]
+### Analytics & Reporting 
 
 #### Objective
 
