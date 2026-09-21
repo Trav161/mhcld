@@ -653,7 +653,7 @@ WHERE MH3 IS NOT NULL;
 -- can group, filter, and trend flags through dim_diagnosis.
 --
 -- GRAIN:
---   One record = one active diagnosis flag for one client-year.
+--   One record = one active diagnosis flag for one client year.
 -- ============================================================
 
 CREATE TABLE gold.bridge_client_diagnosis_flag (
@@ -740,7 +740,7 @@ SELECT YEAR, CASEID, 'IJS', 1, CURRENT_TIMESTAMP FROM silver.mhcld WHERE IJSSERV
 
 
 -- ============================================================
--- 15. CREATE ANALYST RIENDLY VIEWS
+-- 15. CREATE ANALYST VIEWS
 --
 -- WHY:
 -- The base model is dimensional. These views reattach readable
