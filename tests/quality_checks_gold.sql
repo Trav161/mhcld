@@ -7,14 +7,16 @@
 --   of the Gold dimensional model.
 --
 -- USAGE:
---   Run after 00_build_gold.sql.
+--   Run after 0_build_gold.sql.
 --
 -- Expected results:
---   * Client-year records should be unique
---   * Fact records should match their parent client records
---   * Fact codes should match their dimension tables
+--   * Client year records should be unique
+--   * Diagnosis records should match their parent client records
+--   * Diagnosis codes should match the diagnosis dimension
+--   * Service records should match their parent client records
+--   * Service codes should match the service dimension
 --   * Geography keys should match the geography dimension
---   * Silver and Gold client-level row counts should match
+--   * Silver and Gold client level records should match
 -- ============================================================
 
 
@@ -74,7 +76,7 @@ LEFT JOIN gold.fact_client_year c
     ON d.YEAR = c.YEAR
    AND d.CASEID = c.CASEID
 
-WHERE c.CASEID IS NULL;
+WHERE c.YEAR IS NULL;
 
 
 -- ============================================================
@@ -113,7 +115,7 @@ LEFT JOIN gold.fact_client_year c
     ON s.YEAR = c.YEAR
    AND s.CASEID = c.CASEID
 
-WHERE c.CASEID IS NULL;
+WHERE c.YEAR IS NULL;
 
 
 -- ============================================================
@@ -133,7 +135,6 @@ LEFT JOIN gold.dim_service s
     ON f.SERVICE_CODE = s.SERVICE_CODE
 
 WHERE s.SERVICE_CODE IS NULL;
-
 
 -- ============================================================
 -- 7. CLIENT -> GEOGRAPHY RELATIONSHIP
@@ -167,20 +168,16 @@ WHERE c.STATEFIP IS NOT NULL
 -- ============================================================
 
 SELECT
+    silver_counts.silver_rows,
+    gold_counts.gold_client_rows,
+    gold_counts.gold_client_rows - silver_counts.silver_rows AS row_difference
 
-    (SELECT COUNT(*)
-     FROM silver.mhcld_clean)
-        AS silver_rows,
+FROM (
+    SELECT COUNT(*) AS silver_rows
+    FROM silver.mhcld
+) AS silver_counts
 
-    (SELECT COUNT(*)
-     FROM gold.fact_client_year)
-        AS gold_client_rows,
-
-    (SELECT COUNT(*)
-     FROM gold.fact_client_year)
-
-    -
-
-    (SELECT COUNT(*)
-     FROM silver.mhcld_clean)
-        AS row_difference;
+CROSS JOIN (
+    SELECT COUNT(*) AS gold_client_rows
+    FROM gold.fact_client_year
+) AS gold_counts;

@@ -15,6 +15,7 @@
 --   * Required record identifiers should not be NULL
 --   * Documented -9 missing values should not remain in fields
 --     cleaned during the Silver transformation
+--   * Pipeline metadata should be populated
 --
 -- ============================================================
 
@@ -43,20 +44,20 @@ USE mhcld;
 SELECT
 
     (SELECT COUNT(*)
-     FROM bronze.mhcld_raw)
+     FROM bronze.mhcld)
         AS bronze_rows,
 
     (SELECT COUNT(*)
-     FROM silver.mhcld_clean)
+     FROM silver.mhcld)
         AS silver_rows,
 
     (SELECT COUNT(*)
-     FROM silver.mhcld_clean)
+     FROM silver.mhcld)
 
     -
 
     (SELECT COUNT(*)
-     FROM bronze.mhcld_raw)
+     FROM bronze.mhcld)
         AS row_difference;
 
 
@@ -74,7 +75,7 @@ SELECT
     CASEID,
     COUNT(*) AS record_count
 
-FROM silver.mhcld_clean
+FROM silver.mhcld
 
 GROUP BY
     YEAR,
@@ -108,7 +109,7 @@ SELECT
         END
     ) AS missing_caseid_records
 
-FROM silver.mhcld_clean;
+FROM silver.mhcld;
 
 
 -- ============================================================
@@ -125,7 +126,7 @@ FROM silver.mhcld_clean;
 SELECT
     COUNT(*) AS records_with_negative_9
 
-FROM silver.mhcld_clean
+FROM silver.mhcld
 
 WHERE
        AGE = -9
@@ -184,7 +185,7 @@ SELECT
         END
     ) AS missing_source_table
 
-FROM silver.mhcld_clean;
+FROM silver.mhcld;
 
 
 -- ============================================================
@@ -210,7 +211,7 @@ SELECT
                 YEAR,
                 CASEID
 
-            FROM silver.mhcld_clean
+            FROM silver.mhcld
 
             GROUP BY
                 YEAR,
@@ -220,4 +221,4 @@ SELECT
         ) AS duplicates
     ) AS duplicate_keys
 
-FROM silver.mhcld_clean;
+FROM silver.mhcld;
