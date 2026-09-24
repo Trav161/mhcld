@@ -4,7 +4,7 @@ This guide covers the setup required to run the MH-CLD SQL Data Warehouse projec
 
 The warehouse follows:
 
-**Bronze → Silver → Gold → Analysis**
+**Bronze → Silver → Gold Tables → Gold Views → Analysis**
 
 ---
 
@@ -75,7 +75,7 @@ mhcld/
 ├── tests/
 ├── warehouse/
 ├── getting_started.md
-└── README.md
+└── readme.md
 ```
 
 ---
@@ -92,16 +92,17 @@ Run the script to create or open the local DuckDB warehouse and load the raw MH-
 
 ---
 
-## 6. Build the Warehouse Layers
+## 6. Build and Validate the Warehouse
 
-Run the SQL scripts in order:
+Run the SQL scripts in this order:
 
 ```text
 1. sql/bronze/00_build_bronze.sql
 2. sql/silver/00_build_silver.sql
-3. sql/silver/quality_checks_silver.sql
+3. tests/quality_checks_silver.sql
 4. sql/gold/00_build_gold.sql
-5. sql/gold/quality_checks_gold.sql
-```
+5. sql/gold/01_build_gold_views.sql
+6. tests/quality_checks_gold.sql
+7. sql/Analysis/01_analysis.sql
 
 The warehouse is designed so additional analytical questions can be added without modifying the raw source layer.
