@@ -1,12 +1,11 @@
+# DuckDB warehouse files
+warehouse/*.duckdb
+warehouse/*.duckdb.wal
+
 # Raw source data
 data/raw/*
 !data/raw/README.md
-!data/raw/.gitkeep
 
-# Generated DuckDB warehouse
-warehouse/*
-!warehouse/.gitkeep
-
-# System files
+# Local/system files
 .DS_Store
 Thumbs.db

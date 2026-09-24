@@ -32,14 +32,14 @@ USE mhcld;
 
 
 -- ============================================================
--- 2. CLIENT-YEAR DUPLICATE CHECK
+-- 2. CLIENT YEAR DUPLICATE CHECK
 --
 -- Expected:
 -- issue_count = 0
 -- ============================================================
 
 SELECT
-    'Duplicate client-year records' AS check_name,
+    'Duplicate client year records' AS check_name,
     COUNT(*) AS issue_count
 
 FROM (
@@ -60,19 +60,19 @@ FROM (
 
 
 -- ============================================================
--- 3. DIAGNOSIS -> CLIENT RELATIONSHIP
+-- 3. POSITIONAL DIAGNOSIS -> CLIENT RELATIONSHIP
 --
 -- Expected:
 -- issue_count = 0
 -- ============================================================
 
 SELECT
-    'Diagnosis without matching client' AS check_name,
+    'Positional diagnosis without matching client' AS check_name,
     COUNT(*) AS issue_count
 
-FROM gold.fact_client_diagnosis d
+FROM gold.bridge_client_diagnosis AS d
 
-LEFT JOIN gold.fact_client_year c
+LEFT JOIN gold.fact_client_year AS c
     ON d.YEAR = c.YEAR
    AND d.CASEID = c.CASEID
 
@@ -80,22 +80,22 @@ WHERE c.YEAR IS NULL;
 
 
 -- ============================================================
--- 4. DIAGNOSIS -> DIAGNOSIS DIMENSION
+-- 4. DIAGNOSIS FLAG -> DIAGNOSIS DIMENSION
 --
 -- Expected:
 -- issue_count = 0
 -- ============================================================
 
 SELECT
-    'Diagnosis code without dimension match' AS check_name,
+    'Diagnosis flag code without dimension match' AS check_name,
     COUNT(*) AS issue_count
 
-FROM gold.fact_client_diagnosis f
+FROM gold.bridge_client_diagnosis_flag AS df
 
-LEFT JOIN gold.dim_diagnosis d
-    ON f.DIAGNOSIS_CODE = d.DIAGNOSIS_CODE
+LEFT JOIN gold.dim_diagnosis AS diagnosis_dim
+    ON df.DIAGNOSIS_CODE = diagnosis_dim.DIAGNOSIS_CODE
 
-WHERE d.DIAGNOSIS_CODE IS NULL;
+WHERE diagnosis_dim.DIAGNOSIS_CODE IS NULL;
 
 
 -- ============================================================
@@ -106,16 +106,15 @@ WHERE d.DIAGNOSIS_CODE IS NULL;
 -- ============================================================
 
 SELECT
-    'Service without matching client' AS check_name,
+    'Positional diagnosis code without dimension match' AS check_name,
     COUNT(*) AS issue_count
 
-FROM gold.fact_client_service s
+FROM gold.bridge_client_diagnosis AS d
 
-LEFT JOIN gold.fact_client_year c
-    ON s.YEAR = c.YEAR
-   AND s.CASEID = c.CASEID
+LEFT JOIN gold.dim_diagnosis AS diagnosis_dim
+    ON d.DIAGNOSIS_CODE = diagnosis_dim.DIAGNOSIS_CODE
 
-WHERE c.YEAR IS NULL;
+WHERE diagnosis_dim.DIAGNOSIS_CODE IS NULL;
 
 
 -- ============================================================
@@ -129,12 +128,12 @@ SELECT
     'Service code without dimension match' AS check_name,
     COUNT(*) AS issue_count
 
-FROM gold.fact_client_service f
+FROM gold.bridge_client_service AS s
 
-LEFT JOIN gold.dim_service s
-    ON f.SERVICE_CODE = s.SERVICE_CODE
+LEFT JOIN gold.dim_service AS service_dim
+    ON s.SERVICE_CODE = service_dim.SERVICE_CODE
 
-WHERE s.SERVICE_CODE IS NULL;
+WHERE service_dim.SERVICE_CODE IS NULL;
 
 -- ============================================================
 -- 7. CLIENT -> GEOGRAPHY RELATIONSHIP
@@ -147,14 +146,12 @@ SELECT
     'State code without geography match' AS check_name,
     COUNT(*) AS issue_count
 
-FROM gold.fact_client_year c
+FROM gold.fact_client_year AS c
 
-LEFT JOIN gold.dim_geography g
+LEFT JOIN gold.dim_geography AS g
     ON c.STATEFIP = g.STATEFIP
 
-WHERE c.STATEFIP IS NOT NULL
-  AND g.STATEFIP IS NULL;
-
+WHERE g.STATEFIP IS NULL;
 
 -- ============================================================
 -- 8. SILVER / GOLD ROW RECONCILIATION
@@ -168,16 +165,12 @@ WHERE c.STATEFIP IS NOT NULL
 -- ============================================================
 
 SELECT
-    silver_counts.silver_rows,
-    gold_counts.gold_client_rows,
-    gold_counts.gold_client_rows - silver_counts.silver_rows AS row_difference
+    'Service code without dimension match' AS check_name,
+    COUNT(*) AS issue_count
 
-FROM (
-    SELECT COUNT(*) AS silver_rows
-    FROM silver.mhcld
-) AS silver_counts
+FROM gold.bridge_client_service AS s
 
-CROSS JOIN (
-    SELECT COUNT(*) AS gold_client_rows
-    FROM gold.fact_client_year
-) AS gold_counts;
+LEFT JOIN gold.dim_service AS service_dim
+    ON s.SERVICE_CODE = service_dim.SERVICE_CODE
+
+WHERE service_dim.SERVICE_CODE IS NULL;

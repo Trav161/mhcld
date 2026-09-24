@@ -10,7 +10,7 @@
 --   * Add readable labels to important coded fields
 --   * Create dimension tables
 --   * Create the main client year fact table
---   * Produce a final gld build summary
+--   * Produce a final gold build summary
 --
 -- PORTABILITY NOTE:
 --   DuckDB is used as the reference database for this project.
@@ -50,7 +50,8 @@ CREATE SCHEMA IF NOT EXISTS gold;
 -- Bridge tables are dropped before the central fact table.
 -- Dimension tables are dropped last.
 -- ============================================================
-
+DROP VIEW IF EXISTS gold.vw_client_diagnosis_all_analysis;
+DROP VIEW IF EXISTS gold.vw_client_diagnosis_all;
 DROP VIEW IF EXISTS gold.vw_client_service_analysis;
 DROP VIEW IF EXISTS gold.vw_client_diagnosis_flag_analysis;
 DROP VIEW IF EXISTS gold.vw_client_diagnosis_analysis;
@@ -87,7 +88,7 @@ DROP TABLE IF EXISTS gold.dim_geography;
 
 CREATE TABLE gold.dim_age (
 
-    AGE_CODE INTEGER,
+    AGE_CODE INTEGER PRIMARY KEY,
     AGE_GROUP VARCHAR(30),
     AGE_MIN_YEARS INTEGER,
     AGE_MAX_YEARS INTEGER,
@@ -98,6 +99,7 @@ CREATE TABLE gold.dim_age (
 INSERT INTO gold.dim_age
     (AGE_CODE, AGE_GROUP, AGE_MIN_YEARS, AGE_MAX_YEARS, AGE_SORT_ORDER)
 VALUES
+    (-1, 'Unknown', NULL, NULL, 0),
     (1,  '0-11 years',        0,  11,  1),
     (2,  '12-14 years',      12,  14,  2),
     (3,  '15-17 years',      15,  17,  3),
@@ -120,7 +122,7 @@ VALUES
 
 CREATE TABLE gold.dim_education (
 
-    EDUCATION_CODE INTEGER,
+    EDUCATION_CODE INTEGER PRIMARY KEY,
     EDUCATION_LABEL VARCHAR(50),
     EDUCATION_SORT_ORDER INTEGER
 
@@ -129,6 +131,7 @@ CREATE TABLE gold.dim_education (
 INSERT INTO gold.dim_education
     (EDUCATION_CODE, EDUCATION_LABEL, EDUCATION_SORT_ORDER)
 VALUES
+    (-1, 'Unknown', 0),
     (1, 'Special education', 1),
     (2, '0 to 8',            2),
     (3, '9 to 11',           3),
@@ -138,7 +141,7 @@ VALUES
 
 CREATE TABLE gold.dim_ethnicity (
 
-    ETHNICITY_CODE INTEGER,
+    ETHNICITY_CODE INTEGER PRIMARY KEY,
     ETHNICITY_LABEL VARCHAR(50)
 
 );
@@ -146,6 +149,7 @@ CREATE TABLE gold.dim_ethnicity (
 INSERT INTO gold.dim_ethnicity
     (ETHNICITY_CODE, ETHNICITY_LABEL)
 VALUES
+    (-1, 'Unknown'),
     (1, 'Mexican'),
     (2, 'Puerto Rican'),
     (3, 'Other Hispanic or Latino origin'),
@@ -154,7 +158,7 @@ VALUES
 
 CREATE TABLE gold.dim_race (
 
-    RACE_CODE INTEGER,
+    RACE_CODE INTEGER PRIMARY KEY,
     RACE_LABEL VARCHAR(60)
 
 );
@@ -162,6 +166,7 @@ CREATE TABLE gold.dim_race (
 INSERT INTO gold.dim_race
     (RACE_CODE, RACE_LABEL)
 VALUES
+    (-1, 'Unknown'),
     (1, 'American Indian/Alaska Native'),
     (2, 'Asian'),
     (3, 'Black or African American'),
@@ -172,7 +177,7 @@ VALUES
 
 CREATE TABLE gold.dim_sex (
 
-    SEX_CODE INTEGER,
+    SEX_CODE INTEGER PRIMARY KEY,
     SEX_LABEL VARCHAR(20)
 
 );
@@ -180,13 +185,14 @@ CREATE TABLE gold.dim_sex (
 INSERT INTO gold.dim_sex
     (SEX_CODE, SEX_LABEL)
 VALUES
+    (-1, 'Unknown'),
     (1, 'Male'),
     (2, 'Female');
 
 
 CREATE TABLE gold.dim_marital_status (
 
-    MARITAL_STATUS_CODE INTEGER,
+    MARITAL_STATUS_CODE INTEGER PRIMARY KEY,
     MARITAL_STATUS_LABEL VARCHAR(30)
 
 );
@@ -194,6 +200,7 @@ CREATE TABLE gold.dim_marital_status (
 INSERT INTO gold.dim_marital_status
     (MARITAL_STATUS_CODE, MARITAL_STATUS_LABEL)
 VALUES
+    (-1, 'Unknown'),
     (1, 'Never married'),
     (2, 'Now married'),
     (3, 'Separated'),
@@ -206,7 +213,7 @@ VALUES
 
 CREATE TABLE gold.dim_smised_status (
 
-    SMISED_CODE INTEGER,
+    SMISED_CODE INTEGER PRIMARY KEY,
     SMISED_LABEL VARCHAR(50)
 
 );
@@ -214,6 +221,7 @@ CREATE TABLE gold.dim_smised_status (
 INSERT INTO gold.dim_smised_status
     (SMISED_CODE, SMISED_LABEL)
 VALUES
+    (-1, 'Unknown'),
     (1, 'SMI'),
     (2, 'SED and/or at risk for SED'),
     (3, 'Not SMI/SED');
@@ -221,7 +229,7 @@ VALUES
 
 CREATE TABLE gold.dim_substance_use_status (
 
-    SUBSTANCE_USE_STATUS_CODE INTEGER,
+    SUBSTANCE_USE_STATUS_CODE INTEGER PRIMARY KEY,
     SUBSTANCE_USE_DISORDER_LABEL VARCHAR(20)
 
 );
@@ -229,13 +237,14 @@ CREATE TABLE gold.dim_substance_use_status (
 INSERT INTO gold.dim_substance_use_status
     (SUBSTANCE_USE_STATUS_CODE, SUBSTANCE_USE_DISORDER_LABEL)
 VALUES
+    (-1, 'Unknown'),
     (1, 'Yes'),
     (2, 'No');
 
 
 CREATE TABLE gold.dim_substance_diagnosis (
 
-    SUBSTANCE_DIAGNOSIS_CODE INTEGER,
+    SUBSTANCE_DIAGNOSIS_CODE INTEGER PRIMARY KEY,
     SUBSTANCE_DIAGNOSIS_LABEL VARCHAR(60)
 
 );
@@ -243,6 +252,7 @@ CREATE TABLE gold.dim_substance_diagnosis (
 INSERT INTO gold.dim_substance_diagnosis
     (SUBSTANCE_DIAGNOSIS_CODE, SUBSTANCE_DIAGNOSIS_LABEL)
 VALUES
+    (-1, 'Unknown'),
     (1,  'Alcohol induced disorder'),
     (2,  'Alcohol intoxication'),
     (3,  'Substance induced disorder'),
@@ -260,7 +270,7 @@ VALUES
 
 CREATE TABLE gold.dim_employment_status (
 
-    EMPLOYMENT_STATUS_CODE INTEGER,
+    EMPLOYMENT_STATUS_CODE INTEGER PRIMARY KEY,
     EMPLOYMENT_STATUS_LABEL VARCHAR(100)
 
 );
@@ -268,6 +278,7 @@ CREATE TABLE gold.dim_employment_status (
 INSERT INTO gold.dim_employment_status
     (EMPLOYMENT_STATUS_CODE, EMPLOYMENT_STATUS_LABEL)
 VALUES
+    (-1, 'Unknown'),
     (1, 'Full-time'),
     (2, 'Part-time'),
     (3, 'Employed full-time/part-time not differentiated'),
@@ -277,7 +288,7 @@ VALUES
 
 CREATE TABLE gold.dim_not_in_labor_force (
 
-    NOT_IN_LABOR_FORCE_CODE INTEGER,
+    NOT_IN_LABOR_FORCE_CODE INTEGER PRIMARY KEY,
     NOT_IN_LABOR_FORCE_LABEL VARCHAR(100)
 
 );
@@ -285,6 +296,7 @@ CREATE TABLE gold.dim_not_in_labor_force (
 INSERT INTO gold.dim_not_in_labor_force
     (NOT_IN_LABOR_FORCE_CODE, NOT_IN_LABOR_FORCE_LABEL)
 VALUES
+    (-1, 'Unknown'),
     (1, 'Retired, disabled'),
     (2, 'Student'),
     (3, 'Homemaker'),
@@ -294,7 +306,7 @@ VALUES
 
 CREATE TABLE gold.dim_veteran_status (
 
-    VETERAN_STATUS_CODE INTEGER,
+    VETERAN_STATUS_CODE INTEGER PRIMARY KEY,
     VETERAN_STATUS_LABEL VARCHAR(20)
 
 );
@@ -302,13 +314,14 @@ CREATE TABLE gold.dim_veteran_status (
 INSERT INTO gold.dim_veteran_status
     (VETERAN_STATUS_CODE, VETERAN_STATUS_LABEL)
 VALUES
+    (-1, 'Unknown'),
     (1, 'Yes'),
     (2, 'No');
 
 
 CREATE TABLE gold.dim_living_arrangement (
 
-    LIVING_ARRANGEMENT_CODE INTEGER,
+    LIVING_ARRANGEMENT_CODE INTEGER PRIMARY KEY,
     LIVING_ARRANGEMENT_LABEL VARCHAR(30)
 
 );
@@ -316,6 +329,7 @@ CREATE TABLE gold.dim_living_arrangement (
 INSERT INTO gold.dim_living_arrangement
     (LIVING_ARRANGEMENT_CODE, LIVING_ARRANGEMENT_LABEL)
 VALUES
+    (-1, 'Unknown'),
     (1, 'Homeless'),
     (2, 'Private residence'),
     (3, 'Other');
@@ -327,7 +341,7 @@ VALUES
 
 CREATE TABLE gold.dim_geography (
 
-    STATEFIP INTEGER,
+    STATEFIP INTEGER PRIMARY KEY,
     STATE_NAME VARCHAR(50),
     DIVISION INTEGER,
     DIVISION_NAME VARCHAR(50),
@@ -434,7 +448,17 @@ SELECT DISTINCT
     END AS REGION_NAME
 
 FROM silver.mhcld
-WHERE STATEFIP IS NOT NULL;
+WHERE STATEFIP IS NOT NULL
+
+UNION
+
+SELECT
+    -1 AS STATEFIP,
+    'Unknown / Not Reported' AS STATE_NAME,
+    -1 AS DIVISION,
+    'Unknown / Not Reported' AS DIVISION_NAME,
+    -1 AS REGION,
+    'Unknown / Not Reported' AS REGION_NAME;
 
 
 -- ============================================================
@@ -443,7 +467,7 @@ WHERE STATEFIP IS NOT NULL;
 
 CREATE TABLE gold.dim_diagnosis (
 
-    DIAGNOSIS_CODE INTEGER,
+    DIAGNOSIS_CODE INTEGER PRIMARY KEY,
     DIAGNOSIS_NAME VARCHAR(100)
 
 );
@@ -472,7 +496,7 @@ VALUES
 
 CREATE TABLE gold.dim_service (
 
-    SERVICE_CODE VARCHAR(3),
+    SERVICE_CODE VARCHAR(3) PRIMARY KEY,
     SERVICE_NAME VARCHAR(100)
 
 );
@@ -525,7 +549,9 @@ CREATE TABLE gold.fact_client_year (
     CLIENT_RECORD_COUNT INTEGER,
 
     CREATE_DATE TIMESTAMP,
-    SOURCE_TABLE VARCHAR(100)
+    SOURCE_TABLE VARCHAR(100),
+
+    PRIMARY KEY (YEAR, CASEID)
 
 );
 
@@ -554,20 +580,20 @@ INSERT INTO gold.fact_client_year (
 SELECT
     YEAR,
     CASEID,
-    AGE AS AGE_CODE,
-    EDUC AS EDUCATION_CODE,
-    ETHNIC AS ETHNICITY_CODE,
-    RACE AS RACE_CODE,
-    SEX AS SEX_CODE,
-    MARSTAT AS MARITAL_STATUS_CODE,
-    SMISED AS SMISED_CODE,
-    SAP AS SUBSTANCE_USE_STATUS_CODE,
-    SUB AS SUBSTANCE_DIAGNOSIS_CODE,
-    EMPLOY AS EMPLOYMENT_STATUS_CODE,
-    DETNLF AS NOT_IN_LABOR_FORCE_CODE,
-    VETERAN AS VETERAN_STATUS_CODE,
-    LIVARAG AS LIVING_ARRANGEMENT_CODE,
-    STATEFIP,
+    COALESCE(AGE, -1) AS AGE_CODE,
+    COALESCE(EDUC, -1) AS EDUCATION_CODE,
+    COALESCE(ETHNIC, -1) AS ETHNICITY_CODE,
+    COALESCE(RACE, -1) AS RACE_CODE,
+    COALESCE(SEX, -1) AS SEX_CODE,
+    COALESCE(MARSTAT, -1) AS MARITAL_STATUS_CODE,
+    COALESCE(SMISED, -1) AS SMISED_CODE,
+    COALESCE(SAP, -1) AS SUBSTANCE_USE_STATUS_CODE,
+    COALESCE(SUB, -1) AS SUBSTANCE_DIAGNOSIS_CODE,
+    COALESCE(EMPLOY, -1) AS EMPLOYMENT_STATUS_CODE,
+    COALESCE(DETNLF, -1) AS NOT_IN_LABOR_FORCE_CODE,
+    COALESCE(VETERAN, -1) AS VETERAN_STATUS_CODE,
+    COALESCE(LIVARAG, -1) AS LIVING_ARRANGEMENT_CODE,
+    COALESCE(STATEFIP, -1) AS STATEFIP,
     NUMMHS AS NUM_MENTAL_HEALTH_DIAGNOSES,
     1 AS CLIENT_RECORD_COUNT,
     CURRENT_TIMESTAMP AS CREATE_DATE,
@@ -576,7 +602,7 @@ FROM silver.mhcld;
 
 
 -- ============================================================
--- 12. CREATE CLIENT DIAGNOSIS BRIDGE TABLE
+-- 11. CREATE CLIENT DIAGNOSIS BRIDGE TABLE
 --
 -- WHY:
 -- MH1, MH2, and MH3 store diagnoses horizontally in slver.
@@ -594,7 +620,9 @@ CREATE TABLE gold.bridge_client_diagnosis (
     DIAGNOSIS_CODE INTEGER,
     DIAGNOSIS_POSITION INTEGER,
     DIAGNOSIS_COUNT INTEGER,
-    CREATE_DATE TIMESTAMP
+    CREATE_DATE TIMESTAMP,
+
+    PRIMARY KEY (YEAR, CASEID, DIAGNOSIS_POSITION)
 
 );
 
@@ -642,7 +670,7 @@ WHERE MH3 IS NOT NULL;
 
 
 -- ============================================================
--- 13. CREATE CLIENT DIAGNOSIS FLAG BRIDGE TABLE
+-- 12. CREATE CLIENT DIAGNOSIS FLAG BRIDGE TABLE
 --
 -- WHY:
 -- The source includes diagnosis flag columns such as ANXIETYFLG,
@@ -662,8 +690,8 @@ CREATE TABLE gold.bridge_client_diagnosis_flag (
     CASEID BIGINT,
     DIAGNOSIS_CODE INTEGER,
     DIAGNOSIS_FLAG_COUNT INTEGER,
-    CREATE_DATE TIMESTAMP
-
+    CREATE_DATE TIMESTAMP,
+    PRIMARY KEY (YEAR, CASEID, DIAGNOSIS_CODE)
 );
 
 INSERT INTO gold.bridge_client_diagnosis_flag (
@@ -701,14 +729,14 @@ SELECT YEAR, CASEID, 13, 1, CURRENT_TIMESTAMP FROM silver.mhcld WHERE OTHERDISFL
 
 
 -- ============================================================
--- 14. CREATE CLIENT SERVICE BRIDGE TABLE
+-- 13. CREATE CLIENT SERVICE BRIDGE TABLE
 --
 -- WHY:
 -- The source stores service participation across five columns.
 -- This bridge converts each received service into a row.
 --
 -- GRAIN:
---   One record = one service received by one client-year.
+--   One record = one service received by one client year.
 -- ============================================================
 
 CREATE TABLE gold.bridge_client_service (
@@ -717,7 +745,9 @@ CREATE TABLE gold.bridge_client_service (
     CASEID BIGINT,
     SERVICE_CODE VARCHAR(3),
     SERVICE_COUNT INTEGER,
-    CREATE_DATE TIMESTAMP
+    CREATE_DATE TIMESTAMP,
+
+    PRIMARY KEY (YEAR, CASEID, SERVICE_CODE)
 
 );
 
@@ -739,157 +769,9 @@ UNION ALL
 SELECT YEAR, CASEID, 'IJS', 1, CURRENT_TIMESTAMP FROM silver.mhcld WHERE IJSSERVICE = 1;
 
 
--- ============================================================
--- 15. CREATE ANALYST VIEWS
---
--- WHY:
--- The base model is dimensional. These views reattach readable
--- labels for quick querying and dashboard development.
--- ============================================================
-
-CREATE VIEW gold.vw_client_year_analysis AS
-SELECT
-    f.YEAR,
-    f.CASEID,
-
-    f.AGE_CODE,
-    age_dim.AGE_GROUP,
-
-    f.EDUCATION_CODE,
-    education_dim.EDUCATION_LABEL,
-
-    f.ETHNICITY_CODE,
-    ethnicity_dim.ETHNICITY_LABEL,
-
-    f.RACE_CODE,
-    race_dim.RACE_LABEL,
-
-    f.SEX_CODE,
-    sex_dim.SEX_LABEL,
-
-    f.MARITAL_STATUS_CODE,
-    marital_status_dim.MARITAL_STATUS_LABEL,
-
-    f.SMISED_CODE,
-    smised_dim.SMISED_LABEL,
-
-    f.SUBSTANCE_USE_STATUS_CODE,
-    substance_use_dim.SUBSTANCE_USE_DISORDER_LABEL,
-
-    f.SUBSTANCE_DIAGNOSIS_CODE,
-    substance_diagnosis_dim.SUBSTANCE_DIAGNOSIS_LABEL,
-
-    f.EMPLOYMENT_STATUS_CODE,
-    employment_dim.EMPLOYMENT_STATUS_LABEL,
-
-    f.NOT_IN_LABOR_FORCE_CODE,
-    not_in_labor_force_dim.NOT_IN_LABOR_FORCE_LABEL,
-
-    f.VETERAN_STATUS_CODE,
-    veteran_dim.VETERAN_STATUS_LABEL,
-
-    f.LIVING_ARRANGEMENT_CODE,
-    living_arrangement_dim.LIVING_ARRANGEMENT_LABEL,
-
-    f.STATEFIP,
-    geography_dim.STATE_NAME,
-    geography_dim.DIVISION,
-    geography_dim.DIVISION_NAME,
-    geography_dim.REGION,
-    geography_dim.REGION_NAME,
-
-    f.NUM_MENTAL_HEALTH_DIAGNOSES,
-    f.CLIENT_RECORD_COUNT,
-    f.CREATE_DATE,
-    f.SOURCE_TABLE
-
-FROM gold.fact_client_year AS f
-
-LEFT JOIN gold.dim_age AS age_dim
-    ON f.AGE_CODE = age_dim.AGE_CODE
-
-LEFT JOIN gold.dim_education AS education_dim
-    ON f.EDUCATION_CODE = education_dim.EDUCATION_CODE
-
-LEFT JOIN gold.dim_ethnicity AS ethnicity_dim
-    ON f.ETHNICITY_CODE = ethnicity_dim.ETHNICITY_CODE
-
-LEFT JOIN gold.dim_race AS race_dim
-    ON f.RACE_CODE = race_dim.RACE_CODE
-
-LEFT JOIN gold.dim_sex AS sex_dim
-    ON f.SEX_CODE = sex_dim.SEX_CODE
-
-LEFT JOIN gold.dim_marital_status AS marital_status_dim
-    ON f.MARITAL_STATUS_CODE = marital_status_dim.MARITAL_STATUS_CODE
-
-LEFT JOIN gold.dim_smised_status AS smised_dim
-    ON f.SMISED_CODE = smised_dim.SMISED_CODE
-
-LEFT JOIN gold.dim_substance_use_status AS substance_use_dim
-    ON f.SUBSTANCE_USE_STATUS_CODE = substance_use_dim.SUBSTANCE_USE_STATUS_CODE
-
-LEFT JOIN gold.dim_substance_diagnosis AS substance_diagnosis_dim
-    ON f.SUBSTANCE_DIAGNOSIS_CODE = substance_diagnosis_dim.SUBSTANCE_DIAGNOSIS_CODE
-
-LEFT JOIN gold.dim_employment_status AS employment_dim
-    ON f.EMPLOYMENT_STATUS_CODE = employment_dim.EMPLOYMENT_STATUS_CODE
-
-LEFT JOIN gold.dim_not_in_labor_force AS not_in_labor_force_dim
-    ON f.NOT_IN_LABOR_FORCE_CODE = not_in_labor_force_dim.NOT_IN_LABOR_FORCE_CODE
-
-LEFT JOIN gold.dim_veteran_status AS veteran_dim
-    ON f.VETERAN_STATUS_CODE = veteran_dim.VETERAN_STATUS_CODE
-
-LEFT JOIN gold.dim_living_arrangement AS living_arrangement_dim
-    ON f.LIVING_ARRANGEMENT_CODE = living_arrangement_dim.LIVING_ARRANGEMENT_CODE
-
-LEFT JOIN gold.dim_geography AS geography_dim
-    ON f.STATEFIP = geography_dim.STATEFIP;
-
-
-CREATE VIEW gold.vw_client_diagnosis_analysis AS
-SELECT
-    d.YEAR,
-    d.CASEID,
-    d.DIAGNOSIS_CODE,
-    diagnosis_dim.DIAGNOSIS_NAME,
-    d.DIAGNOSIS_POSITION,
-    d.DIAGNOSIS_COUNT,
-    d.CREATE_DATE
-FROM gold.bridge_client_diagnosis AS d
-LEFT JOIN gold.dim_diagnosis AS diagnosis_dim
-    ON d.DIAGNOSIS_CODE = diagnosis_dim.DIAGNOSIS_CODE;
-
-
-CREATE VIEW gold.vw_client_diagnosis_flag_analysis AS
-SELECT
-    df.YEAR,
-    df.CASEID,
-    df.DIAGNOSIS_CODE,
-    diagnosis_dim.DIAGNOSIS_NAME,
-    df.DIAGNOSIS_FLAG_COUNT,
-    df.CREATE_DATE
-FROM gold.bridge_client_diagnosis_flag AS df
-LEFT JOIN gold.dim_diagnosis AS diagnosis_dim
-    ON df.DIAGNOSIS_CODE = diagnosis_dim.DIAGNOSIS_CODE;
-
-
-CREATE VIEW gold.vw_client_service_analysis AS
-SELECT
-    s.YEAR,
-    s.CASEID,
-    s.SERVICE_CODE,
-    service_dim.SERVICE_NAME,
-    s.SERVICE_COUNT,
-    s.CREATE_DATE
-FROM gold.bridge_client_service AS s
-LEFT JOIN gold.dim_service AS service_dim
-    ON s.SERVICE_CODE = service_dim.SERVICE_CODE;
-
 
 -- ============================================================
--- 16. GOLD TABLE SUMMARY
+-- 14. GOLD TABLE SUMMARY
 -- ============================================================
 
 SELECT
@@ -1032,7 +914,7 @@ FROM gold.dim_living_arrangement;
 
 
 -- ============================================================
--- 17. GOLD BUILD SUMMARY
+-- 15. GOLD BUILD SUMMARY
 -- ============================================================
 
 SELECT
@@ -1047,7 +929,7 @@ FROM gold.fact_client_year;
 
 
 -- ============================================================
--- 18. GOLD DIMENSION KEY VALIDATION
+-- 16. GOLD DIMENSION KEY VALIDATION
 --
 -- WHY:
 -- These checks identify fact records with coded values that do
@@ -1196,3 +1078,4 @@ LEFT JOIN gold.dim_living_arrangement AS d
     ON f.LIVING_ARRANGEMENT_CODE = d.LIVING_ARRANGEMENT_CODE
 WHERE f.LIVING_ARRANGEMENT_CODE IS NOT NULL
   AND d.LIVING_ARRANGEMENT_CODE IS NULL;
+
