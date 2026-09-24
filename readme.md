@@ -4,6 +4,8 @@
 
 Develop a SQL focused data warehouse using SAMHSA MH-CLD data.The medallion architecture is used to transform raw behavioral health records into structured datasets suitable for analytical use.
 
+![MH-CLD SQL Data Warehouse Pipeline](docs/mhcld_medallion_architecture2.png)
+
 #### Specifications
 
 - **Data Source**: This project uses SAMHSA Mental Health Client Level Data (MH-CLD) public use file. The raw ZIP file is not included in this repository. To run the project locally, download the MH-CLD 2024 delimited public-use file from SAMHSA and extract the CSV files into data/raw/.
